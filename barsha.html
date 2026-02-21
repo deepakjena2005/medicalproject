@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedScan AI | Smart Medicine Identifier</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;}
+
+body{
+background-image:url('djjjjj.png') ;
+color:white;
+overflow-x:hidden;
+}
+nav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:20px 8%;
+background:rgba(255,255,255,0.05);
+}
+nav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:20px 8%;
+background:rgba(255,255,255,0.05);
+}
+
+nav h2{
+    font-weight:700;
+    color: #00040c;
+}
+
+nav ul{
+display:flex;
+list-style:none;
+gap:30px;
+}
+
+nav ul li{
+cursor:pointer;
+font-weight:500;
+transition:0.3s;
+}
+
+nav ul li:hover{color:#38bdf8;}
+
+
+#heading2{
+text-align:center;
+padding:100px 20px 60px;
+color: #00040c;
+font-size: 50px;
+}
+.container{
+max-width:1100px;
+margin:auto;
+padding:40px 20px;
+}
+.card{
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(15px);
+padding:30px;
+border-radius:20px;
+margin-bottom:40px;
+box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+.card h2{
+margin-bottom:20px;
+color:#131414;
+}
+input{
+width:70%;
+padding:12px;
+border-radius:8px;
+border:none;
+margin-right:10px;
+}
+button{
+padding:12px 20px;
+border:none;
+border-radius:8px;
+background:#38bdf8;
+color:#0f172a;
+font-weight:600;
+cursor:pointer;
+transition:0.3s;
+}
+
+button:hover{
+transform:scale(1.05);
+background:#0ea5e9;
+}
+.result{
+margin-top:20px;
+padding:20px;
+background:white;
+color:#1e293b;
+border-radius:12px;
+}
+
+.result h3{
+color:#1e3a8a;
+margin-bottom:10px;
+}
+
+.upload-box{
+border:2px dashed #38bdf8;
+padding:30px;
+text-align:center;
+border-radius:15px;
+margin-bottom:15px;
+cursor:pointer;
+}
+</style>
+</head>
+<body>
+<nav>
+<h2>MedScan AI</h2>
+<ul>
+<li>Home</li>
+<li>Search</li>
+<li>Scan</li>
+<li>About</li>
+</ul>
+</nav>
+
+<h2 id="heading2">ALL TYPE OF MEDICINE INFO</h2>
+
+<div class="container">
+
+<div class="card">
+<h2>Search Medicine Name</h2>
+<input type="text" id="searchInput" placeholder="Enter medicine name">
+<button onclick="searchMedicine()">Search</button>
+<div id="searchResult"></div>
+</div>
+
+<div class="card">
+<h2>Scan Medicine Image</h2>
+<div class="upload-box">
+<input type="file" id="imageUpload" accept="image/*">
+</div>
+<button onclick="scanImage()">Scan Image</button>
+<div id="scanResult"></div>
+</div>
+</div>
+
+<script>
+
+const medicineDB = {
+paracetamol:{description:"Pain reliever & fever reducer.",uses:"Headache, fever.",dosage:"500–1000mg every 4–6 hrs.",characteristics:"White round tablet."},
+ibuprofen:{description:"NSAID pain reliever.",uses:"Inflammation & pain.",dosage:"200–400mg.",characteristics:"Brown coated tablet."},
+amoxicillin:{description:"Antibiotic.",uses:"Infections.",dosage:"500mg.",characteristics:"Capsule."},
+cetirizine:{description:"Antihistamine.",uses:"Allergy.",dosage:"10mg.",characteristics:"White tablet."},
+aspirin:{description:"Pain reliever.",uses:"Heart protection.",dosage:"75–325mg.",characteristics:"Round tablet."},
+metformin:{description:"Diabetes medicine.",uses:"Type 2 diabetes.",dosage:"500mg.",characteristics:"Oval tablet."},
+omeprazole:{description:"Acid reducer.",uses:"GERD.",dosage:"20mg.",characteristics:"Capsule."},
+atorvastatin:{description:"Cholesterol medicine.",uses:"High cholesterol.",dosage:"10–40mg.",characteristics:"Film tablet."},
+azithromycin:{description:"Antibiotic.",uses:"Infections.",dosage:"500mg.",characteristics:"Oval tablet."},
+dolo650:{description:"Paracetamol brand.",uses:"Fever.",dosage:"650mg.",characteristics:"White tablet."},
+pantoprazole:{description:"Acid reducer.",uses:"Ulcer.",dosage:"40mg.",characteristics:"Yellow tablet."},
+crocin:{description:"Pain reliever.",uses:"Fever.",dosage:"500mg.",characteristics:"White tablet."},
+brufen:{description:"Pain reliever.",uses:"Inflammation.",dosage:"400mg.",characteristics:"Brown tablet."},
+augmentin:{description:"Antibiotic combo.",uses:"Infections.",dosage:"625mg.",characteristics:"Capsule."},
+loperamide:{description:"Stops diarrhea.",uses:"Loose motion.",dosage:"2mg.",characteristics:"Capsule."},
+ranitidine:{description:"Acid reducer.",uses:"Acidity.",dosage:"150mg.",characteristics:"Orange tablet."},
+diclofenac:{description:"Pain relief.",uses:"Joint pain.",dosage:"50mg.",characteristics:"Coated tablet."},
+insulin:{description:"Hormone injection.",uses:"Diabetes.",dosage:"Doctor prescribed.",characteristics:"Injection."},
+levocetirizine:{description:"Allergy medicine.",uses:"Sneezing.",dosage:"5mg.",characteristics:"Tablet."},
+multivitamin:{description:"Vitamin supplement.",uses:"Deficiency.",dosage:"One daily.",characteristics:"Capsule."},
+clopidogrel:{description:"Blood thinner.",uses:"Stroke prevention.",dosage:"75mg.",characteristics:"Pink tablet."},
+losartan:{description:"BP medicine.",uses:"Hypertension.",dosage:"50mg.",characteristics:"White tablet."},
+amlodipine:{description:"BP medicine.",uses:"High BP.",dosage:"5mg.",characteristics:"Tablet."},
+salbutamol:{description:"Asthma inhaler.",uses:"Breathing relief.",dosage:"As needed.",characteristics:"Inhaler."},
+montelukast:{description:"Allergy medicine.",uses:"Asthma.",dosage:"10mg.",characteristics:"Chewable tablet."},
+tramadol:{description:"Pain reliever.",uses:"Moderate pain.",dosage:"50mg.",characteristics:"Capsule."},
+gabapentin:{description:"Nerve pain.",uses:"Neuropathy.",dosage:"300mg.",characteristics:"Capsule."},
+prednisolone:{description:"Steroid.",uses:"Inflammation.",dosage:"As prescribed.",characteristics:"Tablet."},
+hydroxychloroquine:{description:"Anti-malarial.",uses:"Malaria.",dosage:"200mg.",characteristics:"Tablet."},
+ciprofloxacin:{description:"Antibiotic.",uses:"UTI.",dosage:"500mg.",characteristics:"Tablet."},
+doxycycline:{description:"Antibiotic.",uses:"Skin infection.",dosage:"100mg.",characteristics:"Capsule."},
+ondansetron:{description:"Prevents vomiting.",uses:"Nausea.",dosage:"4mg.",characteristics:"Tablet."},
+sertraline:{description:"Antidepressant.",uses:"Depression.",dosage:"50mg.",characteristics:"Tablet."},
+fluconazole:{description:"Antifungal.",uses:"Fungal infection.",dosage:"150mg.",characteristics:"Tablet."},
+warfarin:{description:"Blood thinner.",uses:"Clot prevention.",dosage:"Doctor prescribed.",characteristics:"Tablet."},
+furosemide:{description:"Diuretic.",uses:"Edema.",dosage:"40mg.",characteristics:"Tablet."},
+vitaminc:{description:"Vitamin C supplement.",uses:"Immunity.",dosage:"500mg.",characteristics:"Orange tablet."},
+calcium:{description:"Bone supplement.",uses:"Bone strength.",dosage:"500mg.",characteristics:"Large tablet."},
+alprazolam:{description:"Anxiety medicine.",uses:"Panic disorder.",dosage:"0.25mg.",characteristics:"Small tablet."},
+coughsyrup:{description:"Relieves cough.",uses:"Dry cough.",dosage:"10ml.",characteristics:"Liquid syrup."}
+};
+function showResults(matches,id){
+const container=document.getElementById(id);
+container.innerHTML="";
+matches.forEach(name=>{
+const med=medicineDB[name];
+container.innerHTML+=`
+<div class="result">
+<h3>${name.toUpperCase()}</h3>
+<p><strong>Description:</strong> ${med.description}</p>
+<p><strong>Uses:</strong> ${med.uses}</p>
+<p><strong>Dosage:</strong> ${med.dosage}</p>
+<p><strong>Characteristics:</strong> ${med.characteristics}</p>
+</div>`;
+});
+}
+function searchMedicine(){
+const input=document.getElementById("searchInput").value.toLowerCase().trim();
+if(!input){alert("Enter medicine name");return;}
+const matches=Object.keys(medicineDB).filter(name=>name.includes(input));
+if(matches.length>0){showResults(matches,"searchResult");}
+else{document.getElementById("searchResult").innerHTML="<div class='result'>Medicine not found</div>";}
+}
+function scanImage(){
+const file=document.getElementById("imageUpload");
+if(file.files.length===0){alert("Upload image");return;}
+const fileName=file.files[0].name.toLowerCase();
+const matches=Object.keys(medicineDB).filter(name=>fileName.includes(name));
+if(matches.length>0){showResults(matches,"scanResult");}
+else{document.getElementById("scanResult").innerHTML="<div class='result'>Medicine not recognized</div>";}
+}
+</script>
+</body>
+</html>
