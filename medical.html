@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedScan AI | Medicine Scanner</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-image: url('djjjjj.png');
+    color: white;
+}
+
+header {
+  padding: 20px 8%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header h1 {
+  font-size: 24px;
+}
+
+.container {
+  padding: 40px 8%;
+  max-width: 1000px;
+  margin: auto;
+}
+
+.card {
+  background: rgb(12, 189, 234);
+  color: #1e293b;
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  margin-left: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+ 
+}
+
+input, button {
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+}
+
+input {
+  width: 70%;
+  margin-right: 10px;
+  border: 1px solid #cbd5e1;
+}
+
+button {
+  background: #1e3a8a;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #0f172a;
+}
+
+.result p{
+  color: #1e3a8a;
+}
+
+.result h3 {
+  color: #11141b;
+}
+
+.upload-area {
+  border: 2px dashed #94a3b8;
+  padding: 30px;
+  text-align: center;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.upload-area:hover {
+  background: #f1f5f9;
+}
+h2{
+    text-align: center;
+}
+video {
+    width: 300px;
+    height: 220px;
+    border: 2px solid #333;
+    border-radius: 10px;
+    margin-left: 300px;
+    margin-bottom: 30px;
+}
+
+img {
+    width: 300px;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+button {
+    margin: 10px;
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    background-color: #28a745;
+    color: white;
+}
+
+button:hover {
+    background-color: #218838;
+}
+#medicineInfo {
+    margin-top: 20px;
+    padding: 10px;
+    background: rgb(123, 109, 109);
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px gray;
+}
+.container{
+  margin-top: 50px;
+}
+#photo{
+  margin-bottom:40px ;
+  height: 200px;
+  width: 320px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1> MEDSCAN AI</h1>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h2>Search Medicine by Name</h2>
+    <input type="text" id="searchInput" placeholder="Enter medicine name">
+    <button onclick="searchMedicine()">Search</button>
+    <div class="result" id="searchResult"></div>
+  </div>
+
+  <div class="card">
+    <h2>Scan Medicine Image</h2>
+    <div class="upload-area">
+      <input type="file" id="imageUpload" accept="image/*">
+    </div>
+    <button onclick="scanImage()">Scan Image</button>
+    <div class="result" id="scanResult"></div>
+  </div>
+
+</div>
+<div class="container2">
+        <video id="video" autoplay></video>
+        <button onclick="startCamera()">Open Camera</button>
+        <button onclick="capturePhoto()">Scan Medicine</button>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <img id="photo">
+        <div id="medicineInfo">
+            <h3>Scan Result:</h3>
+            <p id="result">No medicine scanned yet.</p>
+        </div>
+</div>    
+<script>
+
+
+const medicineDB = {
+  "paracetamol": {description:"Pain reliever and fever reducer.",uses:"Headache, fever, mild to moderate pain.",dosage:"500-1000mg every 4-6 hours.",schedule:"After food if stomach sensitive; can be taken with or without food.",duration:"3-5 days for fever/pain unless advised.",sideeffects:"Nausea, rash, liver toxicity in overdose.",warnings:"Do not exceed 4000mg/day; caution in liver disease; avoid alcohol.",characteristics:"White 500mg tablet."},
+
+"ibuprofen": {description:"NSAID anti-inflammatory.",uses:"Pain, arthritis, inflammation.",dosage:"200-400mg every 6 hours.",schedule:"After meals to reduce stomach irritation.",duration:"3-7 days for pain unless prescribed longer.",sideeffects:"Stomach pain, heartburn, kidney issues, ulcers.",warnings:"Avoid in kidney disease, ulcers, late pregnancy; do not combine with other NSAIDs.",characteristics:"Brown/orange coated tablet."},
+
+"amoxicillin": {description:"Penicillin antibiotic.",uses:"Bacterial infections.",dosage:"500mg every 8 hours.",schedule:"Every 8 hours (morning-afternoon-night); with or without food.",duration:"5-10 days as prescribed; complete full course.",sideeffects:"Diarrhea, rash, nausea.",warnings:"Avoid if allergic to penicillin; complete full course.",characteristics:"Pink/white capsule."},
+
+"azithromycin": {description:"Macrolide antibiotic.",uses:"Respiratory infections.",dosage:"500mg daily.",schedule:"Once daily, 1 hour before or 2 hours after food.",duration:"3-5 days as prescribed.",sideeffects:"Nausea, diarrhea, abdominal pain.",warnings:"May affect heart rhythm; avoid with certain cardiac drugs.",characteristics:"Oval white tablet."},
+
+"ciprofloxacin": {description:"Fluoroquinolone antibiotic.",uses:"UTI infections.",dosage:"250-750mg twice daily.",schedule:"Every 12 hours; avoid dairy/antacids 2 hours before/after.",duration:"5-14 days as prescribed.",sideeffects:"Nausea, tendon pain, dizziness.",warnings:"Risk of tendon rupture; avoid in pregnancy unless prescribed.",characteristics:"White tablet."},
+
+"metformin": {description:"Antidiabetic medicine.",uses:"Type 2 diabetes.",dosage:"500-1000mg twice daily.",schedule:"With meals (morning and evening).",duration:"Long-term as prescribed.",sideeffects:"Diarrhea, nausea, B12 deficiency.",warnings:"Avoid in severe kidney disease; stop before contrast studies.",characteristics:"Round white tablet."},
+
+"atorvastatin": {description:"Cholesterol-lowering statin.",uses:"High cholesterol.",dosage:"10-80mg daily.",schedule:"Once daily, preferably at night; with or without food.",duration:"Long-term therapy.",sideeffects:"Muscle pain, liver enzyme elevation.",warnings:"Avoid in active liver disease; report muscle pain.",characteristics:"Small white tablet."},
+
+"amlodipine": {description:"Calcium channel blocker.",uses:"High blood pressure.",dosage:"5-10mg daily.",schedule:"Once daily, same time each day.",duration:"Long-term therapy.",sideeffects:"Ankle swelling, headache, flushing.",warnings:"Do not stop abruptly without advice.",characteristics:"Small tablet."},
+
+"losartan": {description:"ARB antihypertensive.",uses:"Hypertension.",dosage:"50-100mg daily.",schedule:"Once daily, same time each day.",duration:"Long-term therapy.",sideeffects:"Dizziness, high potassium.",warnings:"Avoid in pregnancy; monitor kidney function.",characteristics:"Oval tablet."},
+
+"omeprazole": {description:"Proton pump inhibitor.",uses:"GERD, acid reflux.",dosage:"20-40mg daily.",schedule:"30 minutes before breakfast.",duration:"2-8 weeks or as prescribed.",sideeffects:"Headache, diarrhea, B12 deficiency long-term.",warnings:"Long-term use may increase fracture risk.",characteristics:"Capsule form."},
+
+"pantoprazole": {description:"PPI medication.",uses:"Acid reflux.",dosage:"40mg daily.",schedule:"Before breakfast.",duration:"2-8 weeks.",sideeffects:"Headache, nausea.",warnings:"Long-term use caution; may lower magnesium.",characteristics:"Yellow tablet."},
+
+"rabeprazole": {description:"Proton pump inhibitor.",uses:"GERD.",dosage:"20mg daily.",schedule:"Before meals.",duration:"4-8 weeks.",sideeffects:"Headache, diarrhea.",warnings:"Long-term use requires monitoring.",characteristics:"Tablet."},
+
+"esomeprazole": {description:"PPI drug.",uses:"Acid reflux.",dosage:"20-40mg daily.",schedule:"At least 1 hour before meals.",duration:"4-8 weeks.",sideeffects:"Abdominal pain, headache.",warnings:"Avoid prolonged unsupervised use.",characteristics:"Capsule."},
+
+"ranitidine": {description:"H2 blocker.",uses:"Acidity.",dosage:"150mg twice daily.",schedule:"Morning and evening; with or without food.",duration:"2-6 weeks.",sideeffects:"Headache, constipation.",warnings:"Some brands withdrawn in many countries; check availability.",characteristics:"Tablet."},
+
+"famotidine": {description:"H2 blocker.",uses:"Ulcers.",dosage:"20-40mg daily.",schedule:"At bedtime or as directed.",duration:"4-8 weeks.",sideeffects:"Headache, dizziness.",warnings:"Adjust dose in kidney disease.",characteristics:"Tablet."},
+
+"cetirizine": {description:"Antihistamine.",uses:"Allergies.",dosage:"10mg daily.",schedule:"Once daily, preferably evening.",duration:"As needed during allergy exposure.",sideeffects:"Drowsiness, dry mouth.",warnings:"Avoid alcohol; caution while driving.",characteristics:"Small white tablet."},
+
+"loratadine": {description:"Antihistamine.",uses:"Allergic rhinitis.",dosage:"10mg daily.",schedule:"Once daily, any time.",duration:"As needed.",sideeffects:"Headache, dry mouth.",warnings:"Usually non-drowsy but monitor response.",characteristics:"White tablet."},
+
+"fexofenadine": {description:"Antihistamine.",uses:"Allergies.",dosage:"120mg daily.",schedule:"Before meals with water; avoid fruit juice.",duration:"As needed.",sideeffects:"Headache, nausea.",warnings:"Avoid taking with antacids close together.",characteristics:"Tablet."},
+
+"levocetirizine": {description:"Antiallergic medicine.",uses:"Allergies.",dosage:"5mg daily.",schedule:"Evening time.",duration:"As required.",sideeffects:"Sleepiness, fatigue.",warnings:"Avoid alcohol.",characteristics:"Tablet."},
+
+"montelukast": {description:"Leukotriene inhibitor.",uses:"Asthma.",dosage:"10mg daily.",schedule:"Evening.",duration:"Long-term control.",sideeffects:"Headache, mood changes.",warnings:"Report behavioral changes.",characteristics:"Tablet."},
+
+"salbutamol": {description:"Bronchodilator.",uses:"Asthma relief.",dosage:"2 puffs.",schedule:"As needed for wheezing; 4-6 hours apart.",duration:"As required for symptoms.",sideeffects:"Tremor, palpitations.",warnings:"Seek care if frequent use needed.",characteristics:"Inhaler."},
+
+"budesonide": {description:"Corticosteroid inhaler.",uses:"Asthma.",dosage:"As prescribed.",schedule:"Usually twice daily; rinse mouth after use.",duration:"Long-term control.",sideeffects:"Oral thrush, hoarseness.",warnings:"Do not stop abruptly.",characteristics:"Inhaler."},
+
+"beclomethasone": {description:"Steroid inhaler.",uses:"Asthma.",dosage:"As directed.",schedule:"Twice daily; rinse mouth after use.",duration:"Long-term control.",sideeffects:"Throat irritation.",warnings:"Regular use required for effect.",characteristics:"Inhaler."},
+
+"prednisolone": {description:"Steroid drug.",uses:"Inflammation.",dosage:"5-60mg daily.",schedule:"Morning after food.",duration:"Short-term or taper as prescribed.",sideeffects:"Weight gain, mood change, high sugar.",warnings:"Do not stop suddenly; taper dose.",characteristics:"Tablet."},
+
+"dexamethasone": {description:"Corticosteroid.",uses:"Severe inflammation.",dosage:"As prescribed.",schedule:"Usually once daily with food.",duration:"As directed by doctor.",sideeffects:"Insomnia, high blood sugar.",warnings:"Requires medical supervision.",characteristics:"Tablet."},
+
+"warfarin": {description:"Blood thinner.",uses:"Prevent blood clots.",dosage:"As prescribed.",schedule:"Once daily same time (evening preferred).",duration:"Long-term as advised.",sideeffects:"Bleeding, bruising.",warnings:"Regular INR monitoring required; avoid sudden diet changes.",characteristics:"Small colored tablet."},
+
+"clopidogrel": {description:"Antiplatelet.",uses:"Heart protection.",dosage:"75mg daily.",schedule:"Once daily with or without food.",duration:"Long-term as prescribed.",sideeffects:"Bleeding, bruising.",warnings:"Do not stop without doctor advice.",characteristics:"Tablet."},
+
+"aspirin": {description:"NSAID.",uses:"Pain, heart protection.",dosage:"75-325mg.",schedule:"After food.",duration:"As prescribed.",sideeffects:"Gastric irritation, bleeding.",warnings:"Avoid in ulcers; caution in children (Reye’s syndrome).",characteristics:"White tablet."},
+
+"heparin": {description:"Anticoagulant injection.",uses:"Blood clots.",dosage:"As prescribed.",schedule:"Administered by healthcare professional.",duration:"Short-term hospital use.",sideeffects:"Bleeding, low platelets.",warnings:"Monitor clotting parameters.",characteristics:"Injection."},
+
+"metoprolol": {description:"Beta blocker.",uses:"Hypertension.",dosage:"25-100mg daily.",schedule:"Once or twice daily with food.",duration:"Long-term.",sideeffects:"Bradycardia, fatigue.",warnings:"Do not stop abruptly.",characteristics:"Tablet."},
+
+"propranolol": {description:"Beta blocker.",uses:"Anxiety, BP.",dosage:"40mg daily.",schedule:"Before meals.",duration:"As prescribed.",sideeffects:"Fatigue, slow pulse.",warnings:"Avoid in asthma.",characteristics:"Tablet."},
+
+"atenolol": {description:"Beta blocker.",uses:"Hypertension.",dosage:"50mg daily.",schedule:"Once daily same time.",duration:"Long-term.",sideeffects:"Cold extremities, fatigue.",warnings:"Do not stop suddenly.",characteristics:"Tablet."},
+
+"carvedilol": {description:"Heart medicine.",uses:"Heart failure.",dosage:"As prescribed.",schedule:"With food, twice daily.",duration:"Long-term.",sideeffects:"Dizziness, low BP.",warnings:"Dose titration required.",characteristics:"Tablet."},
+
+"furosemide": {description:"Diuretic.",uses:"Fluid retention.",dosage:"20-80mg daily.",schedule:"Morning to avoid nighttime urination.",duration:"As prescribed.",sideeffects:"Dehydration, low potassium.",warnings:"Monitor electrolytes.",characteristics:"Tablet."},
+
+"spironolactone": {description:"Potassium-sparing diuretic.",uses:"Edema.",dosage:"25-100mg daily.",schedule:"Morning with food.",duration:"As prescribed.",sideeffects:"High potassium, breast tenderness.",warnings:"Avoid potassium supplements unless advised.",characteristics:"Tablet."},
+
+"levothyroxine": {description:"Thyroid hormone.",uses:"Hypothyroidism.",dosage:"25-150mcg daily.",schedule:"Early morning empty stomach; 30-60 min before food.",duration:"Long-term lifelong therapy.",sideeffects:"Palpitations if overdosed.",warnings:"Avoid taking with calcium/iron within 4 hours.",characteristics:"Small tablet."},
+
+"insulin": {description:"Hormone injection.",uses:"Diabetes.",dosage:"As prescribed.",schedule:"Before meals or as directed depending on type.",duration:"Lifelong or as advised.",sideeffects:"Low blood sugar, weight gain.",warnings:"Monitor blood glucose regularly.",characteristics:"Injection pen."},
+
+"doxycycline": {description:"Antibiotic.",uses:"Bacterial infections.",dosage:"100mg twice daily.",schedule:"After food with full glass of water; avoid lying down 30 min.",duration:"7-14 days.",sideeffects:"Photosensitivity, nausea.",warnings:"Avoid in pregnancy and children under 8.",characteristics:"Capsule."},
+
+"clarithromycin": {description:"Antibiotic.",uses:"Respiratory infection.",dosage:"500mg twice daily.",schedule:"Every 12 hours with or without food.",duration:"7-14 days.",sideeffects:"Taste disturbance, nausea.",warnings:"May interact with statins.",characteristics:"Tablet."},
+
+"ceftriaxone": {description:"Cephalosporin antibiotic.",uses:"Severe infections.",dosage:"Injection.",schedule:"Given once or twice daily by healthcare provider.",duration:"As prescribed (usually 5-14 days).",sideeffects:"Injection site pain, diarrhea.",warnings:"Administered under medical supervision.",characteristics:"Injection vial."}
+};
+function searchMedicine() {
+  const input = document.getElementById("searchInput").value.toLowerCase();
+  const resultDiv = document.getElementById("searchResult");
+
+  if (medicineDB[input]) {
+    const med = medicineDB[input];
+    resultDiv.innerHTML =`
+     
+      <p><strong>Description:</strong> ${med.description}</p>
+      <p><strong>Uses:</strong> ${med.uses}</p>
+      <p><strong>Dosage:</strong> ${med.dosage}</p>
+       <p><strong>schedule:</strong> ${med.schedule}</p>
+        <p><strong>duration:</strong> ${med.duration}</p>
+         <p><strong>sideeffects:</strong> ${med.sideeffects}</p>
+          <p><strong>warnings:</strong> ${med.warnings}</p>
+      <p><strong>Characteristics:</strong> ${med.characteristics}</p>
+      `;
+  } else {
+    resultDiv.innerHTML = "<p style='color:red;'>Medicine not found.</p>";
+  }
+}
+
+function searchMedicine() {
+  const input = document.getElementById("searchInput").value.toLowerCase();
+  const resultDiv = document.getElementById("searchResult");
+
+  if (medicineDB[input]) {
+    const med = medicineDB[input];
+    resultDiv.innerHTML = `
+      
+      <p><strong>Description:</strong> ${med.description}</p>
+      <p><strong>Uses:</strong> ${med.uses}</p>
+      <p><strong>Dosage:</strong> ${med.dosage}</p>
+      <p><strong>Characteristics:</strong> ${med.characteristics}</p>
+    `;
+  } else {
+    resultDiv.innerHTML = "<p style='color:red;'>Medicine not found.</p>";
+  }
+}
+
+
+function scanImage() {
+  const fileInput = document.getElementById("imageUpload");
+  const resultDiv = document.getElementById("scanResult");
+
+  if (fileInput.files.length === 0) {
+    resultDiv.innerHTML = "<p style='color:red;'>Please upload an image.</p>";
+    return;
+  }
+
+  const simulatedResult = "paracetamol"; 
+
+  const med = medicineDB[simulatedResult];
+
+  resultDiv.innerHTML = `
+    <h3>Detected: ${simulatedResult.toUpperCase()}</h3>
+    <p><strong>Description:</strong> ${med.description}</p>
+    <p><strong>Uses:</strong> ${med.uses}</p>
+    <p><strong>Dosage:</strong> ${med.dosage}</p>
+    <p><strong>Characteristics:</strong> ${med.characteristics}</p>
+  `;
+}
+ let video = document.getElementById("video");
+let canvas = document.getElementById("canvas");
+let photo = document.getElementById("photo");
+let result = document.getElementById("result");
+        function startCamera() {
+
+            const video = document.getElementById("video");
+
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                })
+                .catch(function(error) {
+                    alert("Camera access denied or error occurred");
+                });
+
+        }
+    function capturePhoto() {
+    let context = canvas.getContext("2d");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0);
+
+    let imageData = canvas.toDataURL("image/png");
+    photo.src = imageData;
+
+
+    scanMedicine(imageData);
+}
+
+function scanMedicine(imageData) {
+
+
+    let random = Math.floor(Math.random() * 3);
+
+    if (random === 0) {
+        result.innerHTML = "<b>Paracetamol</b><br>Used for fever and pain relief.";
+    }
+    else {
+        result.innerHTML = "<br>Invalid image. please scan again";
+    }
+}
+function captureImage() {
+    context.drawImage(video, 0, 0, 300, 250);
+
+  
+    let scannedMedicine = "paracetamol";  
+    let inputMedicine = "paracetamol";    
+
+    if (scannedMedicine === inputMedicine) {
+        result.innerHTML = "✅ Medicine Matched: Paracetamol";
+    } else {
+        result.innerHTML = "❌ Medicine Not Found";
+    }
+}
+</script>
+
+</body>
+</html>
